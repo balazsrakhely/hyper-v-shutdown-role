@@ -77,4 +77,4 @@
   register: _state_change_result
   delegate_to: "{{ hv_host }}"
 
-- debug: var=_state_change_result.output
+- debug: var=_state_change_result
