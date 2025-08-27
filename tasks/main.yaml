@@ -44,7 +44,7 @@
           $VMName
       )
 
-      $Ansible.Result = Get-SCVirtualMachine -VMMServer $VMServer -Name $VMName
+      Get-SCVirtualMachine -VMMServer mvscvmm01.pgsm.hu -Name tvbw16std
     parameters:
       VMServer: mvscvmm01.pgsm.hu
       VMName: tvbw16std
