@@ -40,7 +40,7 @@
           [String]
           $VMMServer,
           [String]
-          $VMName
+          $VMName,
           [String]
           $VMState
       )
@@ -65,6 +65,8 @@
         $output.err = $_.Exception.Message
         $output.obj = $VMObj | Select-Object -Property Name, Status
       }
+
+      $output
     parameters:
       VMMServer: "{{ vmm_server }}"
       VMName: "{{ _vm_obj_item.Name }}"
