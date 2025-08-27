@@ -49,17 +49,15 @@
       [CmdletBinding()]
       param (
           [String]
-          $VMServer,
-
+          $InputVMServer,
           [String]
-          $VMName
+          $InputVMName
       )
 
-      $VMServerObject = Get-SCVMMServer -ComputerName $VMServer
-      Get-SCVirtualMachine -VMMServer $VMServerObject -Name $VMName
+      Get-SCVirtualMachine -VMMServer $InputVMServer -Name $InputVMName
     parameters:
-      VMServer: mvscvmm01.pgsm.hu
-      VMName: tvbw16std
+      InputVMServer: "mvscvmm01.pgsm.hu"
+      InputVMName: "tvbw16std"
   register: _vm_result
   delegate_to: "{{ _hvdeploy_target_host }}"
 
