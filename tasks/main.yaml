@@ -55,7 +55,7 @@
 
         $resultObject = switch ($VMState) {
           "on"      { $VMObj | Start-SCVirtualMachine -ErrorAction Stop }
-          "off"     { $VMObj | Stop-SCVirtualMachine -ErrorAction Stop }
+          "off"     { $VMObj | Stop-SCVirtualMachine -Shutdown -ErrorAction Stop }
           "restart" { $VMObj | Reset-SCVirtualMachine -ErrorAction Stop }
         }
 
