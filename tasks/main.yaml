@@ -41,13 +41,13 @@
           [String]
           $VMMServer,
           [String]
-          $VMName
+          $VMTag
       )
 
-      Get-SCVirtualMachine -VMMServer $VMMServer -Name $VMName | Select-Object -Property Name, Tag
+      Get-SCVirtualMachine -VMMServer $VMMServer | Where-Object { $_.Tag -Eq $VMTag } | Select-Object -Property Name, Tag
     parameters:
       VMMServer: mvscvmm01.pgsm.hu
-      VMName: tvbw16std
+      VMTag: Origoss-Test-1
   register: _vm_result
   delegate_to: "{{ _hvdeploy_target_host }}"
 
