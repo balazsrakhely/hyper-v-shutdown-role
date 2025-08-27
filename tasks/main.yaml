@@ -3,7 +3,10 @@
   ansible.windows.win_powershell:
     script: |
       echo "Hello world"
+  register: _echo_output
   delegate_to: "{{ _hvdeploy_target_host }}"
+
+- debug: var=_echo_output.output
 
 - name: Powershell version
   ansible.windows.win_powershell:
@@ -25,7 +28,10 @@
       echo "Hello $Name"
     parameters:
       Name: "{{ _hvdeploy_target_host }}"
+  register: _var_test_output
   delegate_to: "{{ _hvdeploy_target_host }}"
+
+- debug: var=_var_test_output.output
 
 - name: SCVMM test
   ansible.windows.win_powershell:
@@ -33,7 +39,7 @@
       [CmdletBinding()]
       param (
           [String]
-          $VMServer
+          $VMServer,
 
           [String]
           $VMName
