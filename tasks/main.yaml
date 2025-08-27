@@ -36,7 +36,18 @@
 - name: SCVMM test
   ansible.windows.win_powershell:
     script: |
-      Get-SCVirtualMachine -VMMServer mvscvmm01.pgsm.hu -Name tvbw16std
+      [CmdletBinding()]
+      param (
+          [String]
+          $VMMServer,
+          [String]
+          $VMName
+      )
+
+      Get-SCVirtualMachine -VMMServer $VMMServer -Name $VMName | Select-Object -Property Name, Tag
+    parameters:
+      VMMServer: mvscvmm01.pgsm.hu
+      VMName: tvbw16std
   register: _vm_result
   delegate_to: "{{ _hvdeploy_target_host }}"
 
