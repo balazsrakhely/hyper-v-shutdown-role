@@ -1,39 +1,18 @@
 ---
-- name: Test powershell script
-  ansible.windows.win_powershell:
-    script: |
-      echo "Hello world"
-  register: _echo_output
-  delegate_to: "{{ _hvdeploy_target_host }}"
-
-- debug: var=_echo_output.output
+- name: Validations
+  ansible.builtin.include_tasks:
+    file: validate.yaml
 
 - name: Powershell version
   ansible.windows.win_powershell:
     script: |
       $PSVersionTable.PSVersion
   register: _ps_version
-  delegate_to: "{{ _hvdeploy_target_host }}"
+  delegate_to: "{{ hv_host }}"
 
 - debug: var=_ps_version.output
 
-- name: Input variable test
-  ansible.windows.win_powershell:
-    script: |
-      [CmdletBinding()]
-      param (
-          [String]
-          $Name
-      )
-      echo "Hello $Name"
-    parameters:
-      Name: "{{ _hvdeploy_target_host }}"
-  register: _var_test_output
-  delegate_to: "{{ _hvdeploy_target_host }}"
-
-- debug: var=_var_test_output.output
-
-- name: SCVMM test
+- name: Find VMs to modify the state of
   ansible.windows.win_powershell:
     script: |
       [CmdletBinding()]
@@ -46,9 +25,54 @@
 
       Get-SCVirtualMachine -VMMServer $VMMServer | Where-Object { $_.Tag -Eq $VMTag } | Select-Object -Property Name, Tag
     parameters:
-      VMMServer: mvscvmm01.pgsm.hu
-      VMTag: Origoss-Test-1
+      VMMServer: "{{ vmm_server }}"
+      VMTag: "{{ vm_tag }}"
   register: _vm_result
-  delegate_to: "{{ _hvdeploy_target_host }}"
+  delegate_to: "{{ hv_host }}"
 
 - debug: var=_vm_result.output
+
+- name: Modify state of VM
+  ansible.windows.win_powershell:
+    script: |
+      [CmdletBinding()]
+      param (
+          [String]
+          $VMMServer,
+          [String]
+          $VMName
+          [String]
+          $VMState
+      )
+
+      $output = @{
+          obj = $null
+          err = ""
+      }
+
+      try {
+        $VMObj = Get-SCVirtualMachine -VMMServer $VMMServer -Name $VMName -ErrorAction Stop
+
+        $resultObject = switch ($VMState) {
+          "on"      { $VMObj | Start-SCVirtualMachine -ErrorAction Stop }
+          "off"     { $VMObj | Stop-SCVirtualMachine -Shutdown -ErrorAction Stop }
+          "restart" { $VMObj | Reset-SCVirtualMachine -ErrorAction Stop }
+        }
+
+        $output.obj = $resultObject | Select-Object -Property Name, Status
+      }
+      catch {
+        $output.err = $_.Exception.Message
+        $output.obj = $VMObj | Select-Object -Property Name, Status
+      }
+    parameters:
+      VMMServer: "{{ vmm_server }}"
+      VMName: "{{ _vm_obj_item.Name }}"
+      VMState: "{{ vm_state }}"
+  loop: "{{ _vm_result.output }}"
+  loop_control:
+    loop_var: _vm_obj_item
+  register: _state_change_result
+  delegate_to: "{{ hv_host }}"
+
+- debug: var=_state_change_result.output

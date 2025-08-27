@@ -1,0 +1,25 @@
+---
+- name: Validate presence of hyper-v host to delegate the tasks to
+  ansible.builtin.assert:
+    that:
+      - hv_host | default('', true) | trim != ''
+    fail_msg: "hv_host must be present and non-empty"
+
+- name: Validate presence of VMM server
+  ansible.builtin.assert:
+    that:
+      - vmm_server | default('', true) | trim != ''
+    fail_msg: "vmm_server must be present and non-empty"
+
+- name: Validate presence of vm tag for filtering
+  ansible.builtin.assert:
+    that:
+      - vm_tag | default('', true) | trim != ''
+    fail_msg: "vm_tag must be present and non-empty"
+
+- name: Validate vm state
+  ansible.builtin.assert:
+    that:
+      - vm_state | default('', true) | trim != ''
+      - vm_state == 'on' or vm_state == 'off' or vm_state == 'restart' 
+    fail_msg: "vm_state must be present with a value in ['on', 'off', 'restart']"
