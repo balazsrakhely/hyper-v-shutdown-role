@@ -1,0 +1,48 @@
+---
+- name: Test powershell script
+  ansible.windows.win_powershell:
+    script: |
+      echo "Hello world"
+  delegate_to: "{{ _hvdeploy_target_host }}"
+
+- name: Powershell version
+  ansible.windows.win_powershell:
+    script: |
+      $PSVersionTable.PSVersion
+  register: _ps_version
+  delegate_to: "{{ _hvdeploy_target_host }}"
+
+- debug: var=_ps_version.output
+
+- name: Input variable test
+  ansible.windows.win_powershell:
+    script: |
+      [CmdletBinding()]
+      param (
+          [String]
+          $Name
+      )
+      echo "Hello $Name"
+    parameters:
+      Name: "{{ _hvdeploy_target_host }}"
+  delegate_to: "{{ _hvdeploy_target_host }}"
+
+- name: SCVMM test
+  ansible.windows.win_powershell:
+    script: |
+      [CmdletBinding()]
+      param (
+          [String]
+          $VMServer
+
+          [String]
+          $VMName
+      )
+      Get-SCVirtualMachine -VMMServer $VMServer -Name $VMName
+    parameters:
+      VMServer: mvscvmm01.pgsm.hu
+      VMName: tvbw16std
+  register: _vm_result
+  delegate_to: "{{ _hvdeploy_target_host }}"
+
+- debug: var=_vm_result.output
